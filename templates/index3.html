@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Graphs</h1>
+    <label for="year">Year:</label>
+    <select id="year">
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+    </select><br><br>
+    
+    <label for="emirate">Emirate:</label>
+    <select id="emirate">
+        <option value="Abu Dhabi">Abu Dhabi</option>
+        <option value="Ajman">Ajman</option>
+        <option value="Dubai">Dubai</option>
+        <option value="Fujairah">Fujairah</option>
+        <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+        <option value="Sharjah">Sharjah</option>
+        <option value="Umm al-Quwain">Umm al-Quwain</option>
+    </select><br><br>
+
+    <button id="generate">Generate Graphs</button>
+    <div id="disability-graph"></div>
+    <div id="gender-graph"></div>
+
+    <script>
+        $(document).ready(function () {
+            $('#generate').click(function () { // Changed to #generate
+                var year = $('#year').val();
+                var emirate = $('#emirate').val();
+                
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 'year': year, 'emirate': emirate }),
+                    dataType: 'json',
+                    url: '/graphs',
+                    success: function (response) {
+                        var disabilityGraphData = response.disability_graph;
+                        var genderGraphData = response.gender_graph;
+                        
+                        // Render disability graph
+                        var disabilityTrace = {
+                            x: disabilityGraphData.categories,
+                            y: disabilityGraphData.counts,
+                            type: 'bar',
+                            name: 'Disability Category'
+                        };
+                        var disabilityLayout = {
+                            title: 'Disability Distribution',
+                            xaxis: { title: 'Disability Category' },
+                            yaxis: { title: 'Count' }
+                        };
+                        Plotly.newPlot('disability-graph', [disabilityTrace], disabilityLayout);
+    
+                        // Render gender graph
+                        var genderTrace = {
+                            labels: genderGraphData.categories,
+                            values: genderGraphData.counts,
+                            type: 'pie'
+                        };
+                        var genderLayout = {
+                            title: 'Gender Distribution'
+                        };
+                        Plotly.newPlot('gender-graph', [genderTrace], genderLayout);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
